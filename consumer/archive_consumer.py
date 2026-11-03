@@ -61,7 +61,8 @@ def main():
                     continue
                 value = json.loads(msg.value())
                 day = datetime.fromtimestamp(
-                    value["event_time"], tz=timezone.utc).strftime("%Y-%m-%d")
+                    value.get("event_time", value.get("time")),
+                    tz=timezone.utc).strftime("%Y-%m-%d")
                 if day not in files:
                     path = OUT_DIR / f"date={day}"
                     path.mkdir(parents=True, exist_ok=True)
