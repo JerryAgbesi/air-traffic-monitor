@@ -29,7 +29,9 @@ Real-time air traffic over France: OpenSky Network → Kafka → dashboard + a s
    ```bash
    python consumer/archive_consumer.py
    ```
-   Raw events accumulate in `data/raw/date=YYYY-MM-DD/states.jsonl`.
+   Raw OpenSky snapshots accumulate in `data/raw/date=YYYY-MM-DD/states.jsonl`,
+   with one complete API response per line. The archiver also accepts older
+   per-aircraft events already stored in Kafka.
 
 ## Important: keep it running 24/7
 
@@ -40,7 +42,7 @@ Only **one** producer should run at a time, otherwise you burn the shared API cr
 ## Structure
 
 ```
-producer/   OpenSky polling -> Kafka (topic opensky.states.raw, key = icao24)
+producer/   OpenSky polling -> Kafka (topic opensky.states.raw, key = snapshot time)
 consumer/   Kafka -> daily JSON-lines archive
 ml/         features, baseline, model (to do)
 dashboard/  KPIs + live map (to do)

@@ -45,7 +45,7 @@ def send_messages(producer, topic, msgs):
         producer.produce(
             topic, key=key.encode(),
             value=json.dumps(value).encode(),
-            timestamp=value["event_time"] * 1000,
+            timestamp=value["time"] * 1000,
             on_delivery=delivery_report)
         producer.poll(0)
     producer.flush(10)

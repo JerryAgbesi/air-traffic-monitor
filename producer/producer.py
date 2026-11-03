@@ -8,7 +8,6 @@ import requests
 import config
 from kafka_utils import ensure_topic, make_producer, send_messages
 from opensky_client import OpenSkyClient
-from transform import to_messages
 
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s %(levelname)s %(message)s")
@@ -47,10 +46,10 @@ def main():
         try:
             payload, wait_extra = client.fetch_states()
             if payload:
-                msgs = to_messages(payload)
+                msgs = [(str(payload["time"]), payload)]
                 send_messages(producer, config.TOPIC, msgs)
                 log.info("Snapshot %s: sent %d aircraft",
-                         payload.get("time"), len(msgs))
+                         payload.get("time"), len(payload.get("states") or []))
         except requests.RequestException as e:
             log.error("HTTP error: %s", e)
             wait_extra = 30

@@ -24,5 +24,3 @@ BBOX = {
     "lamax": float(os.getenv("LAMAX", "51.1")),
     "lomax": float(os.getenv("LOMAX", "9.6")),
 }
-
-SCHEMA_VERSION = 1
