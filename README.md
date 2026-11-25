@@ -1,5 +1,7 @@
 # OpenSky Airspace Monitor
 
+> **Cluster deployment (Azure VMs, native Kafka / HDFS / Spark on YARN / TimescaleDB):** see [docs/PIPELINE.md](docs/PIPELINE.md). The Docker quick start below is the original local setup.
+
 Real-time air traffic over France: OpenSky Network → Kafka → dashboard + a small ML forecast.
 
 ## Quick start

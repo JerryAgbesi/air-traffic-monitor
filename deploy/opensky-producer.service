@@ -1,0 +1,21 @@
+# Run on: node6.  Install with:
+#   sudo cp deploy/opensky-producer.service /etc/systemd/system/
+#   sudo systemctl daemon-reload && sudo systemctl enable --now opensky-producer
+[Unit]
+Description=OpenSky -> Kafka producer
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=azureuser
+WorkingDirectory=/opt/opensky/pipeline/producer
+Environment=OPENSKY_ENV_FILE=/opt/opensky/pipeline/.env
+ExecStart=/opt/opensky/venv/bin/python producer.py
+Restart=always
+RestartSec=15
+KillSignal=SIGTERM
+TimeoutStopSec=60
+
+[Install]
+WantedBy=multi-user.target

@@ -1,4 +1,5 @@
-# Gets aircraft data from the OpenSky API
+# OpenSky REST client: OAuth2 client-credentials token + /states/all call.
+# Based on the team's original producer/opensky_client.py.
 import logging
 import time
 
@@ -16,6 +17,7 @@ class OpenSkyClient:
         self.token = None
         self.token_expiry = 0.0
         self.session = requests.Session()
+        self.credits_left = None
 
     def _get_token(self):
         if not (self.client_id and self.client_secret):
@@ -35,6 +37,7 @@ class OpenSkyClient:
         return self.token
 
     def fetch_states(self, bbox=BBOX):
+        """Return (payload or None, extra seconds to wait)."""
         headers = {}
         token = self._get_token()
         if token:
@@ -43,6 +46,7 @@ class OpenSkyClient:
         if r.status_code == 429:
             wait = int(r.headers.get("X-Rate-Limit-Retry-After-Seconds", "600"))
             log.warning("Rate limited (429). Waiting %s s", wait)
+            self.credits_left = 0
             return None, wait
         if r.status_code == 401:
             self.token = None
@@ -51,5 +55,5 @@ class OpenSkyClient:
         r.raise_for_status()
         remaining = r.headers.get("X-Rate-Limit-Remaining")
         if remaining is not None:
-            log.info("API credits remaining: %s", remaining)
+            self.credits_left = int(remaining)
         return r.json(), 0

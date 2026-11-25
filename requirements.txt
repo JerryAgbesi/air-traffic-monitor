@@ -1,3 +1,6 @@
+# producer (node6)
 confluent-kafka>=2.4
 requests>=2.31
 python-dotenv>=1.0
+psycopg2-binary>=2.9
+# Spark jobs use the PySpark that ships with /opt/spark (3.5.x); no pip install needed.
