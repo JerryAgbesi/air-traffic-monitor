@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    container_name: air-traffic-dashboard
+    ports:
+      - "5000:5000"
+    environment:
+      - INFLUX_URL=http://worker5:8086
+      - INFLUX_ORG=esilv
+      - INFLUX_BUCKET=air_traffic
+      - INFLUX_TOKEN=${INFLUX_TOKEN}
+      - KAFKA_BOOTSTRAP=worker2:9092,worker3:9092,worker4:9092
+      - FORECAST_TOPIC=opensky.forecast.30min
+      - FLASK_DEBUG=false
+    restart: unless-stopped
+    networks:
+      - air-traffic-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+networks:
+  air-traffic-network:
+    external: true
+    name: air-traffic-network

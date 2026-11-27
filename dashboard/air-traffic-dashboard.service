@@ -1,0 +1,32 @@
+[Unit]
+Description=Air Traffic Dashboard
+After=network.target influxdb.service
+Wants=influxdb.service
+
+[Service]
+Type=simple
+User=dashboard
+Group=dashboard
+WorkingDirectory=/opt/air-traffic-monitor/dashboard
+EnvironmentFile=/opt/air-traffic-monitor/dashboard/.env
+ExecStart=/opt/air-traffic-monitor/dashboard/venv/bin/gunicorn \
+    --bind 0.0.0.0:5000 \
+    --workers 2 \
+    --threads 4 \
+    --timeout 60 \
+    --access-logfile - \
+    --error-logfile - \
+    app:app
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/opt/air-traffic-monitor/dashboard
+
+[Install]
+WantedBy=multi-user.target

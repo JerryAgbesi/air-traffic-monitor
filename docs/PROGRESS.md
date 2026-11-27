@@ -86,13 +86,18 @@ Running every PR #3 stream next to the raw stream probably won't fit in YARN. Ea
 
 ## Next steps
 
+- [x] **ML feature engineering** (`ml/features.py`): 5-min window aggregation, lag features (t, t-15, t-30, t-60), rolling stats, time features, target (t+30min)
+- [x] **ML training** (`ml/train.py`): Linear Regression + Random Forest with Spark MLlib, chronological split, persistence baseline, cross-validation support, model saving
+- [x] **ML evaluation** (`ml/evaluate.py`): MAE/RMSE/R2 comparison, error analysis by hour/weekday/traffic level, detailed reports
+- [x] **ML forecasting** (`ml/forecast.py`): Real-time 30-min ahead inference from latest curated data, Kafka output for dashboard
+- [x] **ML deployment scripts** (`ml/submit_train.sh`, `ml/submit_forecast.sh`): YARN cluster submission
+- [x] **Dashboard** (`dashboard/`): Flask + Plotly with KPIs, traffic trends, altitude, forecast vs actual, live aircraft map
 - [ ] Bring the cluster back up (steps above) and decide who checks it each day.
 - [ ] Choose between InfluxDB and TimescaleDB, then merge the two pipelines into one.
 - [ ] Schedule `curate.py`. A systemd timer on the master was planned but isn't set up yet.
-- [ ] ML: 5-minute airborne counts from the curated zone, persistence baseline, Spark MLlib models with `CrossValidator` (parallelism > 1). Data starts on 2026-11-25 and has a gap on 2026-11-26/27.
+- [ ] Run ML training on cluster once enough data accumulated (need ~3 weeks continuous)
 - [ ] Scaling experiment with 1, 2 and 4 executors.
 - [ ] Compare with Ray, XGBoost-on-Spark or TorchDistributor (required for a group of 3).
-- [ ] Dashboard: KPIs from the Checkpoint 1 brief, reading from the serving database.
 - [ ] Fix `consumer/archive_consumer.py`: it crashes with `_NO_OFFSET` when a batch contains only error messages, because it then commits with nothing to commit.
 
 ## Where to find things
