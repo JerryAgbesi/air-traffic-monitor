@@ -6,7 +6,7 @@
 
 Real-time air traffic over France: OpenSky Network → Kafka → dashboard + a small ML forecast.
 
-## Quick start
+## Quick start (Local Development)
 
 1. **Install** Docker Desktop and Python 3.10+.
 2. **Credentials:** create a free account on https://opensky-network.org, then go to Account → create an API client.
@@ -37,6 +37,32 @@ Real-time air traffic over France: OpenSky Network → Kafka → dashboard + a s
    with one complete API response per line. The archiver also accepts older
    per-aircraft events already stored in Kafka.
 
+### ML Forecasting (Local)
+
+```bash
+# Generate features from curated data
+python -m ml.features --start-date 2026-11-25 --end-date 2026-11-27 --output /tmp/features
+
+# Train models
+python -m ml.train --start-date 2026-11-25 --end-date 2026-11-27
+
+# Evaluate models
+python -m ml.evaluate --detail
+
+# Generate single forecast
+python -m ml.forecast --once --output console
+```
+
+### Dashboard (Local)
+
+```bash
+cd dashboard
+pip install -r requirements.txt
+cp .env.example .env  # configure INFLUX_TOKEN
+python app.py
+```
+Open http://localhost:5000
+
 ## Important: keep it running 24/7
 
 The ML part needs weeks of continuous history. Run the producer and the archiver on a machine
@@ -46,13 +72,13 @@ Only **one** producer should run at a time, otherwise you burn the shared API cr
 ## Structure
 
 ```
-producer/   OpenSky polling -> Kafka (topic opensky.states.raw, key = snapshot time)
-consumer/   Kafka -> daily JSON-lines archive
-spark/      YARN jobs deployed on the VMs: Kafka -> HDFS raw zone, curated zone + InfluxDB
-jobs/       PR #3 Spark jobs (TimescaleDB version, not deployed yet)
-ml/         features, baseline, model (to do)
-dashboard/  KPIs + live map (to do)
-docs/       checkpoint reports
+producer/        OpenSky polling -> Kafka (topic opensky.states.raw, key = snapshot time)
+consumer/        Kafka -> daily JSON-lines archive
+spark/           YARN jobs deployed on VMs: Kafka -> HDFS raw zone, curated zone + InfluxDB
+jobs/            PR #3 Spark jobs (TimescaleDB version, not deployed yet)
+ml/              Feature engineering, training, forecasting (Spark MLlib)
+dashboard/       Flask + Plotly real-time dashboard (KPIs, trends, forecast, live map)
+docs/            Checkpoint reports and deployment guides
 ```
 
 ## Data source

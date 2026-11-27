@@ -1,0 +1,23 @@
+[Unit]
+Description=Airborne Forecaster - Continuous 30-min ahead forecasting
+After=network.target kafka.service yarn.service
+Wants=kafka.service yarn.service
+
+[Service]
+Type=simple
+User=spark
+Group=spark
+WorkingDirectory=/opt/air-traffic-monitor/ml
+EnvironmentFile=/opt/air-traffic-monitor/ml/.env
+ExecStart=/opt/air-traffic-monitor/ml/submit_forecast.sh --model random_forest --interval 5
+Restart=always
+RestartSec=30
+StandardOutput=journal
+StandardError=journal
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

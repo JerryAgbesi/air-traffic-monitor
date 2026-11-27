@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>French Airspace Traffic Monitor</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-primary mb-3">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">
+                ✈ French Airspace Traffic Monitor
+            </span>
+            <span class="navbar-text" id="last-update">Loading...</span>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <!-- KPI Cards Row -->
+        <div class="row mb-3" id="kpi-row">
+            <div class="col-md-3">
+                <div class="card kpi-card bg-success text-white">
+                    <div class="card-body">
+                        <h6 class="card-title">Airborne</h6>
+                        <h2 class="card-text" id="kpi-airborne">--</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card kpi-card bg-primary text-white">
+                    <div class="card-body">
+                        <h6 class="card-title">Total Aircraft</h6>
+                        <h2 class="card-text" id="kpi-total">--</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card kpi-card bg-warning text-dark">
+                    <div class="card-body">
+                        <h6 class="card-title">Climbing</h6>
+                        <h2 class="card-text" id="kpi-climbing">--</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card kpi-card bg-danger text-white">
+                    <div class="card-body">
+                        <h6 class="card-title">Descending</h6>
+                        <h2 class="card-text" id="kpi-descending">--</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Secondary KPIs -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">Mean Altitude</h6>
+                        <h3 class="card-text" id="kpi-altitude">-- m</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">Data as of</h6>
+                        <h5 class="card-text" id="kpi-timestamp">--</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 1: Traffic & Altitude -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Traffic Trends (5-min windows)</h5>
+                        <select class="form-select form-select-sm w-auto" id="traffic-hours" onchange="loadTrafficChart()">
+                            <option value="1">1 hour</option>
+                            <option value="4" selected>4 hours</option>
+                            <option value="12">12 hours</option>
+                            <option value="24">24 hours</option>
+                        </select>
+                    </div>
+                    <div class="card-body">
+                        <div id="traffic-chart" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0">Mean Altitude</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="altitude-chart" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 2: Forecast vs Actual -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">30-Minute Forecast vs Actual</h5>
+                        <select class="form-select form-select-sm w-auto" id="forecast-hours" onchange="loadForecastChart()">
+                            <option value="1">1 hour</option>
+                            <option value="4" selected>4 hours</option>
+                            <option value="12">12 hours</option>
+                            <option value="24">24 hours</option>
+                        </select>
+                    </div>
+                    <div class="card-body">
+                        <div id="forecast-chart" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Map -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Live Aircraft Map (last 5 min)</h5>
+                        <div>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="loadLiveMap()">Refresh Map</button>
+                            <select class="form-select form-select-sm w-auto d-inline-block" id="map-limit" style="width: auto;">
+                                <option value="200">200 aircraft</option>
+                                <option value="500" selected>500 aircraft</option>
+                                <option value="1000">1000 aircraft</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="live-map" class="chart-container map-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h6>Flight Phase Legend</h6>
+                        <div class="d-flex flex-wrap gap-3">
+                            <span class="legend-item"><span class="legend-color" style="background:#1f77b4"></span> Level</span>
+                            <span class="legend-item"><span class="legend-color" style="background:#ff7f0e"></span> Climb</span>
+                            <span class="legend-item"><span class="legend-color" style="background:#d62728"></span> Descent</span>
+                            <span class="legend-item"><span class="legend-color" style="background:#7f7f7f"></span> Ground</span>
+                            <span class="legend-item"><small class="text-muted">Circle size ≈ altitude</small></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
