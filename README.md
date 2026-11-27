@@ -1,6 +1,8 @@
 # OpenSky Airspace Monitor
 
 > **Cluster deployment (Azure VMs, native Kafka / HDFS / Spark on YARN / TimescaleDB):** see [docs/PIPELINE.md](docs/PIPELINE.md). The Docker quick start below is the original local setup.
+>
+> **Where the project stands and what runs on the VMs today:** [docs/PROGRESS.md](docs/PROGRESS.md).
 
 Real-time air traffic over France: OpenSky Network → Kafka → dashboard + a small ML forecast.
 
@@ -46,6 +48,8 @@ Only **one** producer should run at a time, otherwise you burn the shared API cr
 ```
 producer/   OpenSky polling -> Kafka (topic opensky.states.raw, key = snapshot time)
 consumer/   Kafka -> daily JSON-lines archive
+spark/      YARN jobs deployed on the VMs: Kafka -> HDFS raw zone, curated zone + InfluxDB
+jobs/       PR #3 Spark jobs (TimescaleDB version, not deployed yet)
 ml/         features, baseline, model (to do)
 dashboard/  KPIs + live map (to do)
 docs/       checkpoint reports
